@@ -3,20 +3,27 @@
 Утилиты для сортировки, переименования и архивации фото- и видеоматериалов.
 
 ## Структура проекта
-```bash
-photo/
-├── src/ # Основной код сортировки
-│ ├── config.py # Настройки путей и расширений
-│ ├── duplicates.py # Проверка дубликатов по хешу
-│ ├── exif_reader.py # Чтение метаданных (Pillow, ffprobe)
-│ ├── file_ops.py # Операции с файлами (перемещение, очистка)
-│ └── sorter.py # Основная логика сортировки
-├── scripts/ # Вспомогательные утилиты
-│ ├── archive_years.py # Архивирование по годам (требует 7-Zip)
-│ └── rename_cyrillic.py # Переименование файлов (транслитерация)
-├── main.py # Точка входа (консольное меню)
+
+```text
+photo-sorter/
+├── src/                       # Основной код сортировки
+│   ├── __init__.py
+│   ├── config.py              # Настройки путей, расширений, ffprobe
+│   ├── duplicates.py          # Проверка дубликатов по SHA256
+│   ├── exif_reader.py         # Чтение даты из фото (Pillow) и видео (ffprobe)
+│   ├── file_ops.py            # Перемещение, переименование, очистка
+│   └── sorter.py              # Основная логика сортировки
+├── scripts/                   # Вспомогательные утилиты
+│   ├── archive_years.py       # Архивирование по месяцам (требует 7-Zip)
+│   └── rename_cyrillic.py     # Переименование (транслитерация, очистка имён)
+├── main.py                    # Консольное меню
+├── make.bat                   # Команды для Windows (CMD)
+├── Makefile                   # Команды для Linux / WSL
+├── Makefile.ps1               # Команды для PowerShell
+├── .gitignore
 └── README.md
 ```
+
 ## Требования
 
 - **Python 3.8+**
@@ -35,28 +42,52 @@ cd photo-sorter
 ```
 
 ### 2. Установить зависимости Python
+
 ```bash
 pip install Pillow exifread
 ```
 
-Или через Makefile:
-
-```bash
-make install
-```
-
 ### 3. Установить FFmpeg
-* Скачайте [ffmpeg-release-essentials.zip](https://www.gyan.dev/ffmpeg/builds/)
-* Распакуйте в C:\Program Files\ffmpeg\
-* В src/config.py укажите путь:
+
+1. Скачайте [ffmpeg-release-essentials.zip](https://www.gyan.dev/ffmpeg/builds/)
+2. Распакуйте в `C:\Program Files\ffmpeg\`
+3. В `src/config.py` укажите путь:
 
 ```python
 FFPROBE_PATH = r"C:\Program Files\ffmpeg\bin\ffprobe.exe"
 ```
-Добавлять в системный PATH не нужно.
+
+Добавлять в системный PATH **не нужно**.
 
 ### 4. Установить 7-Zip (только для архивации)
-Скачайте с [7-zip.org](https://www.7-zip.org/) и установите. Скрипт archive_years.py ищет 7z.exe в стандартных путях.
+
+Скачайте с [7-zip.org](https://www.7-zip.org/) и установите. Скрипт `archive_years.py` ищет 7z.exe в стандартных путях.
+
+## Запуск
+
+### Windows (CMD)
+
+```cmd
+make.bat run
+make.bat archive
+make.bat rename
+```
+
+### Windows (PowerShell)
+
+```powershell
+.\Makefile.ps1 run
+.\Makefile.ps1 archive
+.\Makefile.ps1 rename
+```
+
+### Linux / WSL
+
+```bash
+make run
+make archive
+make rename
+```
 
 ## Использование
 
@@ -67,19 +98,19 @@ python main.py
 ```
 
 Меню:
-
-* 1 — Сортировать всё (фото, видео, неопознанные)
-* 2 — Удалить пустые папки
-* 3 — Выход
+- `1` — Сортировать всё (фото, видео, неопознанные)
+- `2` — Удалить пустые папки
+- `3` — Выход
 
 ### Архивация по месяцам
+
 ```bash
 python scripts/archive_years.py
 ```
 
 Создаёт zip-архивы без сжатия в формате `2017-01.zip`, `2017-02.zip`...
 
-Перед запуском укажите пути в `scripts/archive_years.py`:
+**Перед запуском** укажите пути в `scripts/archive_years.py`:
 
 ```python
 SOURCE_ROOT = r"Z:\PHOTO"              # Откуда берём
@@ -94,27 +125,27 @@ START_YEAR = ""                        # Начать с года ("" — все
 ```bash
 python scripts/rename_cyrillic.py
 ```
-Перед запуском укажите путь в скрипте:
+
+**Перед запуском** укажите путь в скрипте:
 
 ```python
-TARGET_DIR = r"Z:\PHOTO"DIR в скрипте
+TARGET_DIR = r"Z:\PHOTO"
 ```
 
-## Команды Makefile
+## Команды
 
-```bash
-make help      # Показать все команды
-make install   # Установить зависимости
-make run       # Запустить основное меню
-make sort      # Запустить сортировку напрямую
-make archive   # Запустить архивацию
-make rename    # Запустить переименование
-make clean     # Очистить временные файлы
-```
+| Команда | Windows (CMD) | PowerShell | Linux / WSL |
+|---------|---------------|------------|-------------|
+| Установить зависимости | `make.bat install` | `.\Makefile.ps1 install` | `make install` |
+| Основное меню | `make.bat run` | `.\Makefile.ps1 run` | `make run` |
+| Сортировка | `make.bat sort` | `.\Makefile.ps1 sort` | `make sort` |
+| Архивация | `make.bat archive` | `.\Makefile.ps1 archive` | `make archive` |
+| Переименование | `make.bat rename` | `.\Makefile.ps1 rename` | `make rename` |
+| Очистить временные файлы | `make.bat clean` | `.\Makefile.ps1 clean` | `make clean` |
 
 ## Настройка путей
 
-Все пути к папкам задаются в `src/config.py`:
+Все основные пути задаются в `src/config.py`:
 
 ```python
 SOURCE_DIR = r"Z:\UNSORTED"              # Исходная папка (откуда берём)
@@ -125,8 +156,9 @@ DUPLICATES_DIR = r"Z:\DUPLICATES"        # Для дубликатов
 FFPROBE_PATH = r"C:\Program Files\ffmpeg\bin\ffprobe.exe"  # Путь к ffprobe
 ```
 
-## Расширения файлов
-В src/config.py также настраиваются обрабатываемые расширения:
+### Расширения файлов
+
+В `src/config.py` также настраиваются обрабатываемые расширения:
 
 ```python
 PHOTO_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.heic', '.heif',
@@ -138,17 +170,19 @@ VIDEO_EXTENSIONS = {'.mp4', '.mov', '.avi', '.mkv', '.mts', '.m2ts',
 ```
 
 ## Примечания
-* Файлы сортируются в структуру: Год/Месяц/Число/
-* Дубликаты определяются по SHA256-хешу и перемещаются в отдельную папку
-* Русские буквы в именах транслитерируются при переименовании
-* Видео без даты съёмки попадают в VIDEO/NA/
-* Архивы создаются без сжатия (-mx0), только для хранения
+
+- Файлы сортируются в структуру: `Год/Месяц/Число/`
+- Дубликаты определяются по SHA256-хешу и перемещаются в отдельную папку
+- Русские буквы в именах транслитерируются при переименовании
+- Видео без даты съёмки попадают в `VIDEO/NA/`
+- Архивы создаются без сжатия (`-mx0`), только для хранения
 
 ## Порядок работы
-* Сортировка (main.py) — разложить фото и видео по датам
-* Переименование (rename_cyrillic.py) — очистить имена файлов
-* Архивация (archive_years.py) — упаковать в zip по месяцам
 
-## 📄 Лицензия
+1. **Сортировка** (`main.py`) — разложить фото и видео по датам
+2. **Переименование** (`rename_cyrillic.py`) — очистить имена файлов
+3. **Архивация** (`archive_years.py`) — упаковать в zip по месяцам
+
+## Лицензия
 
 MIT

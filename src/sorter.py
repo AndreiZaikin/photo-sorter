@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
 
-from src.config import PHOTO_EXTENSIONS, VIDEO_EXTENSIONS
-from duplicates import is_duplicate
-from exif_reader import get_date_taken
-from file_ops import sanitize_filename, is_already_sorted, move_to_dir, get_dest_subdir, remove_empty_dirs
-
+from src.config import SOURCE_DIR, TARGET_PHOTO_DIR, TARGET_VIDEO_DIR, TARGET_UNDEFINED_DIR, DUPLICATES_DIR, PHOTO_EXTENSIONS, VIDEO_EXTENSIONS
+from src.duplicates import is_duplicate
+from src.exif_reader import get_date_taken
+from src.file_ops import sanitize_filename, is_already_sorted, move_to_dir, get_dest_subdir, remove_empty_dirs
 
 def process_file(filepath: str, target_dir: str, duplicates_dir: str, is_video: bool = False) -> tuple[str, str]:
     """
@@ -179,13 +178,8 @@ def sort_all(source_dir: str, photo_dir: str, video_dir: str, undefined_dir: str
 
 def sort_all_simple():
     """Консольная версия сортировки (для main.py)."""
-    from config import SOURCE_DIR, TARGET_PHOTO_DIR, TARGET_VIDEO_DIR, TARGET_UNDEFINED_DIR, DUPLICATES_DIR
 
     print(f"Сканирую: {SOURCE_DIR}")
-    print(f"Фото: {TARGET_PHOTO_DIR}")
-    print(f"Видео: {TARGET_VIDEO_DIR}")
-    print(f"Неопознанные: {TARGET_UNDEFINED_DIR}")
-    print(f"Дубликаты: {DUPLICATES_DIR}\n")
 
     if not os.path.exists(SOURCE_DIR):
         print(f"Ошибка: папка-источник '{SOURCE_DIR}' не найдена!")
@@ -221,7 +215,6 @@ def sort_all_simple():
 
 def clean_empty_dirs():
     """Удаляет пустые папки в SOURCE_DIR (консольная версия)."""
-    from config import SOURCE_DIR
     print(f"\nИщу пустые папки в: {SOURCE_DIR}\n")
     removed = remove_empty_dirs(SOURCE_DIR)
     print(f"\nУдалено пустых папок: {removed}")
