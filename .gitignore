@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# FFmpeg (локальные бинарники)
+ffmpeg-*/
+ffmpeg.exe
+ffprobe.exe
+ffplay.exe
+
+# 7-Zip
+7z.exe
+7z.dll
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.temp
+
+# Архивы (результаты работы)
+*.zip
+*.rar
+*.7z
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
