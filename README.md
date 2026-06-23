@@ -14,11 +14,10 @@ photo-sorter/
 │   ├── file_ops.py            # Перемещение, переименование, очистка
 │   └── sorter.py              # Основная логика сортировки
 ├── scripts/                   # Вспомогательные утилиты
-│   ├── archive_years.py       # Архивирование по месяцам (требует 7-Zip)
+│   ├── archive_photos.py      # Архивирование по месяцам (требует 7-Zip)
 │   └── rename_cyrillic.py     # Переименование (транслитерация, очистка имён)
 ├── main.py                    # Консольное меню
 ├── make.bat                   # Команды для Windows (CMD)
-├── Makefile                   # Команды для Linux / WSL
 ├── Makefile.ps1               # Команды для PowerShell
 ├── .gitignore
 └── README.md
@@ -26,11 +25,12 @@ photo-sorter/
 
 ## Требования
 
+- **Windows 10/11**
 - **Python 3.8+**
 - **[Pillow](https://python-pillow.org/)** — чтение EXIF из фото
 - **[exifread](https://pypi.org/project/exifread/)** — чтение EXIF из RAW
 - **[FFmpeg](https://ffmpeg.org/)** — чтение метаданных из видео (ffprobe)
-- **[7-Zip](https://www.7-zip.org/)** — только для скрипта `archive_years.py`
+- **[7-Zip](https://www.7-zip.org/)** — только для скрипта `archive_photos.py`
 
 ## Установка
 
@@ -61,7 +61,7 @@ FFPROBE_PATH = r"C:\Program Files\ffmpeg\bin\ffprobe.exe"
 
 ### 4. Установить 7-Zip (только для архивации)
 
-Скачайте с [7-zip.org](https://www.7-zip.org/) и установите. Скрипт `archive_years.py` ищет 7z.exe в стандартных путях.
+Скачайте с [7-zip.org](https://www.7-zip.org/) и установите. Скрипт `archive_photos.py` ищет 7z.exe в стандартных путях.
 
 ## Запуск
 
@@ -78,15 +78,6 @@ make.bat rename
 ```powershell
 .\Makefile.ps1 run
 .\Makefile.ps1 archive
-.\Makefile.ps1 rename
-```
-
-### Linux / WSL
-
-```bash
-make run
-make archive
-make rename
 ```
 
 ## Использование
@@ -105,12 +96,12 @@ python main.py
 ### Архивация по месяцам
 
 ```bash
-python scripts/archive_years.py
+python scripts/archive_photos.py
 ```
 
 Создаёт zip-архивы без сжатия в формате `2017-01.zip`, `2017-02.zip`...
 
-**Перед запуском** укажите пути в `scripts/archive_years.py`:
+**Перед запуском** укажите пути в `scripts/archive_photos.py`:
 
 ```python
 SOURCE_ROOT = r"Z:\PHOTO"              # Откуда берём
@@ -134,14 +125,14 @@ TARGET_DIR = r"Z:\PHOTO"
 
 ## Команды
 
-| Команда | Windows (CMD) | PowerShell | Linux / WSL |
-|---------|---------------|------------|-------------|
-| Установить зависимости | `make.bat install` | `.\Makefile.ps1 install` | `make install` |
-| Основное меню | `make.bat run` | `.\Makefile.ps1 run` | `make run` |
-| Сортировка | `make.bat sort` | `.\Makefile.ps1 sort` | `make sort` |
-| Архивация | `make.bat archive` | `.\Makefile.ps1 archive` | `make archive` |
-| Переименование | `make.bat rename` | `.\Makefile.ps1 rename` | `make rename` |
-| Очистить временные файлы | `make.bat clean` | `.\Makefile.ps1 clean` | `make clean` |
+| Команда | CMD | PowerShell |
+|---------|-----|------------|
+| Установить зависимости | `make.bat install` | `.\Makefile.ps1 install` |
+| Основное меню | `make.bat run` | `.\Makefile.ps1 run` |
+| Сортировка | `make.bat sort` | `.\Makefile.ps1 sort` |
+| Архивация | `make.bat archive` | `.\Makefile.ps1 archive` |
+| Переименование | `make.bat rename` | `.\Makefile.ps1 rename` |
+| Очистить временные файлы | `make.bat clean` | `.\Makefile.ps1 clean` |
 
 ## Настройка путей
 
@@ -171,6 +162,7 @@ VIDEO_EXTENSIONS = {'.mp4', '.mov', '.avi', '.mkv', '.mts', '.m2ts',
 
 ## Примечания
 
+- Проект рассчитан на Windows. Пути задаются в формате `Z:\````
 - Файлы сортируются в структуру: `Год/Месяц/Число/`
 - Дубликаты определяются по SHA256-хешу и перемещаются в отдельную папку
 - Русские буквы в именах транслитерируются при переименовании
@@ -181,7 +173,7 @@ VIDEO_EXTENSIONS = {'.mp4', '.mov', '.avi', '.mkv', '.mts', '.m2ts',
 
 1. **Сортировка** (`main.py`) — разложить фото и видео по датам
 2. **Переименование** (`rename_cyrillic.py`) — очистить имена файлов
-3. **Архивация** (`archive_years.py`) — упаковать в zip по месяцам
+3. **Архивация** (`archive_photos.py`) — упаковать в zip по месяцам
 
 ## Лицензия
 

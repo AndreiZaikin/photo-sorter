@@ -23,7 +23,7 @@ switch ($Command) {
         python -c "from src.sorter import sort_all_simple; sort_all_simple()"
     }
     "archive" {
-        python scripts/archive_years.py
+        python scripts/archive_photos.py
     }
     "rename" {
         python scripts/rename_cyrillic.py

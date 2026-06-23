@@ -31,7 +31,7 @@ python -c "from src.sorter import sort_all_simple; sort_all_simple()"
 goto :eof
 
 :archive
-python scripts/archive_years.py
+python scripts/archive_photos.py
 goto :eof
 
 :rename
