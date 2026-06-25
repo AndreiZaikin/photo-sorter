@@ -1,28 +1,28 @@
 @echo off
 if "%1"=="" goto help
 if "%1"=="install" goto install
-if "%1"=="run" goto run
+if "%1"=="menu" goto menu
 if "%1"=="sort" goto sort
-if "%1"=="archive" goto archive
 if "%1"=="rename" goto rename
+if "%1"=="archive" goto archive
 if "%1"=="clean" goto clean
 goto help
 
 :help
 echo Available commands:
 echo   make.bat install   - Install dependencies
-echo   make.bat run       - Run main menu
-echo   make.bat sort      - Run sorter
+echo   make.bat menu      - Run interactive menu
+echo   make.bat sort      - Sort photos and videos
+echo   make.bat rename    - Rename files (transliteration)
 echo   make.bat archive   - Archive by months
-echo   make.bat rename    - Rename files
-echo   make.bat clean     - Remove temp files
+echo   make.bat clean     - Remove empty folders
 goto :eof
 
 :install
 pip install Pillow exifread
 goto :eof
 
-:run
+:menu
 python main.py
 goto :eof
 
@@ -30,16 +30,14 @@ goto :eof
 python -c "from src.sorter import sort_all_simple; sort_all_simple()"
 goto :eof
 
-:archive
-python scripts/archive_photos.py
+:rename
+python -c "from src.renamer import rename_files; rename_files()"
 goto :eof
 
-:rename
-python scripts/rename_cyrillic.py
+:archive
+python -c "from src.archiver import archive_photos; archive_photos()"
 goto :eof
 
 :clean
-del /s /q *.pyc 2>nul
-for /d /r . %%d in (__pycache__) do @if exist "%%d" rd /s /q "%%d"
-echo Done.
+python -c "from src.sorter import clean_empty_dirs; clean_empty_dirs()"
 goto :eof

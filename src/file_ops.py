@@ -4,9 +4,8 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-SORTED_PATTERN = re.compile(r'^\d{8}_\d{6}_')
+SHORT_SUFFIX_PATTERN = re.compile(r'^(.+)_(\d{1,2})$')
 
-# Таблица транслитерации русских букв в латинские
 RU_TO_EN = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
     'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
@@ -22,65 +21,86 @@ RU_TO_EN = {
 
 
 def transliterate(name: str) -> str:
-    """Заменяет русские буквы на латинские."""
     result = []
     for char in name:
         result.append(RU_TO_EN.get(char, char))
     return ''.join(result)
 
 
-def sanitize_filename(name: str) -> str:
-    """
-    Очищает имя файла:
-    - транслитерирует русские буквы в латинские
-    - заменяет недопустимые в Windows символы на подчёркивание
-    - убирает точки и пробелы в начале и конце
-    """
-    # Сначала транслитерация
+def deduplicate_parts(name: str) -> str:
+    parts = name.split('_')
+    seen = []
+    for part in parts:
+        if part not in seen:
+            seen.append(part)
+    return '_'.join(seen)
+
+
+def clean_filename(name: str) -> str:
     name = transliterate(name)
-
-    # Замена недопустимых символов
-    invalid_chars = '<>:"/\\|?*&%#!'
-    for char in invalid_chars:
+    name = name.replace('(', '_').replace(')', '_')
+    name = name.replace(' ', '_')
+    for char in '<>:"/\\|?*&%#!':
         name = name.replace(char, "_")
-
-    # Убираем пробелы и точки по краям
-    name = name.strip(". ")
-
-    # Убираем множественные подчёркивания
+    name = name.strip("._ ")
     name = re.sub(r'_+', '_', name)
+    return name.lower()
 
-    return name
+
+def strip_all_suffixes(stem: str) -> str:
+    while True:
+        match = SHORT_SUFFIX_PATTERN.match(stem)
+        if match:
+            stem = match.group(1)
+        else:
+            break
+    return stem
 
 
-def is_already_sorted(filename: str) -> bool:
-    """Проверяет, начинается ли имя файла с префикса даты."""
-    return bool(SORTED_PATTERN.match(filename))
+def build_filename(original_stem: str, date_prefix: str, ext: str) -> str:
+    stem = strip_all_suffixes(original_stem)
+    stem = clean_filename(stem)
+    stem = f"{date_prefix}_{stem}"
+    stem = deduplicate_parts(stem)
+    return f"{stem}{ext}"
+
+
+def find_free_name(directory: str, base: str, ext: str, current_name: str = None) -> str:
+    counter = 1
+    while True:
+        candidate = f"{base}_{counter}{ext}"
+        if candidate == current_name:
+            for smaller in range(1, counter):
+                smaller_candidate = f"{base}_{smaller}{ext}"
+                if not os.path.exists(os.path.join(directory, smaller_candidate)):
+                    return smaller_candidate
+            return candidate
+        if not os.path.exists(os.path.join(directory, candidate)):
+            return candidate
+        counter += 1
+
+
+def sanitize_filename(name: str) -> str:
+    return clean_filename(strip_all_suffixes(name))
 
 
 def move_to_dir(filepath: str, dest_dir: str, new_name: str = None) -> str:
-    """Перемещает файл в указанную папку, разрешая конфликты имён."""
     os.makedirs(dest_dir, exist_ok=True)
-
     if new_name is None:
         new_name = os.path.basename(filepath)
-
     dest_path = os.path.join(dest_dir, new_name)
     counter = 1
     stem = Path(new_name).stem
     ext = Path(new_name).suffix
-
     while os.path.exists(dest_path):
         new_name = f"{stem}_{counter}{ext}"
         dest_path = os.path.join(dest_dir, new_name)
         counter += 1
-
     shutil.move(filepath, dest_path)
     return dest_path
 
 
 def get_dest_subdir(target_dir: str, date_taken: datetime) -> str:
-    """Возвращает путь Год/Месяц/Число внутри target_dir."""
     year_dir = date_taken.strftime("%Y")
     month_dir = date_taken.strftime("%m")
     day_dir = date_taken.strftime("%d")
@@ -88,7 +108,6 @@ def get_dest_subdir(target_dir: str, date_taken: datetime) -> str:
 
 
 def remove_empty_dirs(path: str) -> int:
-    """Рекурсивно удаляет пустые папки."""
     removed = 0
     for root, dirs, _ in os.walk(path, topdown=False):
         for dir_name in dirs:
@@ -100,3 +119,10 @@ def remove_empty_dirs(path: str) -> int:
             except OSError:
                 pass
     return removed
+
+
+def count_files(target_dir: str) -> int:
+    total = 0
+    for _, _, files in os.walk(target_dir):
+        total += len(files)
+    return total

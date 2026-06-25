@@ -2,14 +2,11 @@ import subprocess
 import json
 from datetime import datetime
 from pathlib import Path
-
 from PIL import Image
-
 from src.config import VIDEO_EXTENSIONS, FFPROBE_PATH
 
 
 def get_exif_date_pillow(filepath: str) -> datetime | None:
-    """Читает дату съёмки через Pillow (JPEG, HEIC, PNG, TIFF)."""
     try:
         with Image.open(filepath) as img:
             if img.format in ('GIF', 'BMP', 'PCX', 'PPM', 'SGI', 'TGA', 'XBM', 'XPM', 'ICO', 'CUR'):
@@ -28,36 +25,27 @@ def get_exif_date_pillow(filepath: str) -> datetime | None:
 
 
 def get_video_date_ffprobe(filepath: str) -> datetime | None:
-    """Читает дату съёмки видео через ffprobe."""
     try:
         result = subprocess.run(
             [FFPROBE_PATH, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', filepath],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+            capture_output=True, text=True, timeout=30)
         if result.returncode != 0:
             return None
-
         data = json.loads(result.stdout)
-
         for stream in data.get('streams', []):
             tags = stream.get('tags', {})
             for key in ('creation_time', 'date', 'DateTimeOriginal'):
                 if key in tags:
-                    date_str = tags[key]
-                    date_str = date_str.replace('Z', '').replace('T', ' ').split('.')[0].split('+')[0].strip()
+                    date_str = tags[key].replace('Z', '').replace('T', ' ').split('.')[0].split('+')[0].strip()
                     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y:%m:%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
                         try:
                             return datetime.strptime(date_str, fmt)
                         except ValueError:
                             continue
-
         format_tags = data.get('format', {}).get('tags', {})
         for key in ('creation_time', 'date', 'DateTimeOriginal'):
             if key in format_tags:
-                date_str = format_tags[key]
-                date_str = date_str.replace('Z', '').replace('T', ' ').split('.')[0].split('+')[0].strip()
+                date_str = format_tags[key].replace('Z', '').replace('T', ' ').split('.')[0].split('+')[0].strip()
                 for fmt in ("%Y-%m-%d %H:%M:%S", "%Y:%m:%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
                     try:
                         return datetime.strptime(date_str, fmt)
@@ -69,9 +57,7 @@ def get_video_date_ffprobe(filepath: str) -> datetime | None:
 
 
 def get_date_taken(filepath: str, is_video: bool = False) -> datetime | None:
-    """Определяет дату съёмки файла."""
     ext = Path(filepath).suffix.lower()
-
     if is_video:
         return get_video_date_ffprobe(filepath)
     else:

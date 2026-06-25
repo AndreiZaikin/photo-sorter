@@ -5,31 +5,30 @@ param(
 
 switch ($Command) {
     "help" {
-        Write-Host "Доступные команды:"
-        Write-Host "  .\Makefile.ps1 install   - Установить зависимости"
-        Write-Host "  .\Makefile.ps1 run       - Запустить основное меню"
-        Write-Host "  .\Makefile.ps1 sort      - Запустить сортировку"
-        Write-Host "  .\Makefile.ps1 archive   - Запустить архивацию"
-        Write-Host "  .\Makefile.ps1 rename    - Запустить переименование"
-        Write-Host "  .\Makefile.ps1 clean     - Очистить временные файлы"
+        Write-Host "Available commands:"
+        Write-Host "  .\Makefile.ps1 install   - Install dependencies"
+        Write-Host "  .\Makefile.ps1 menu      - Run interactive menu"
+        Write-Host "  .\Makefile.ps1 sort      - Sort photos and videos"
+        Write-Host "  .\Makefile.ps1 rename    - Rename files (transliteration)"
+        Write-Host "  .\Makefile.ps1 archive   - Archive by months"
+        Write-Host "  .\Makefile.ps1 clean     - Remove empty folders"
     }
     "install" {
         pip install Pillow exifread
     }
-    "run" {
+    "menu" {
         python main.py
     }
     "sort" {
         python -c "from src.sorter import sort_all_simple; sort_all_simple()"
     }
-    "archive" {
-        python scripts/archive_photos.py
-    }
     "rename" {
-        python scripts/rename_cyrillic.py
+        python -c "from src.renamer import rename_files; rename_files()"
+    }
+    "archive" {
+        python -c "from src.archiver import archive_photos; archive_photos()"
     }
     "clean" {
-        Get-ChildItem -Recurse -Include __pycache__,*.pyc | Remove-Item -Recurse -Force
-        Write-Host "Очищено."
+        python -c "from src.sorter import clean_empty_dirs; clean_empty_dirs()"
     }
 }
